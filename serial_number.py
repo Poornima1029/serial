@@ -18,16 +18,33 @@ def register_custom_fonts():
                 font_name = os.path.splitext(file)[0]
                 pdfmetrics.registerFont(TTFont(font_name, os.path.join(font_folder, file)))
                 fonts[font_name] = font_name
+
     # Add built-in fonts
     fonts.update({
         "Helvetica": "Helvetica",
         "Times-Roman": "Times-Roman",
         "Courier": "Courier"
     })
+
+    # Add Arial Narrow if present
+    arial_narrow_path = os.path.join("fonts", "ArialNarrow.ttf")
+    if os.path.exists(arial_narrow_path):
+        pdfmetrics.registerFont(TTFont("Arial-Narrow", arial_narrow_path))
+        fonts["Arial-Narrow"] = "Arial-Narrow"
+
     return fonts
 
+# Helper: draw text with letter spacing
+def draw_text(c, x, y, text, font_name, font_size, letter_spacing=0):
+    text_obj = c.beginText(x, y)
+    text_obj.setFont(font_name, font_size)
+    if letter_spacing != 0:
+        text_obj.setCharSpace(letter_spacing)
+    text_obj.textLine(text)
+    c.drawText(text_obj)
+
 # Generate PDF
-def generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, margin_x=50, margin_y=50):
+def generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, margin_x=50, margin_y=50, letter_spacing=0):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
@@ -51,11 +68,10 @@ def generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size
                 x = margin_x + col * x_spacing
                 y = height - margin_y - row * y_spacing + (y_spacing - font_size*3)/2
 
-                # Draw 3 lines
-                c.setFont(font_name, font_size)
-                c.drawString(x, y, batch_code)
-                c.drawString(x, y - font_size - 2, f"{prefix}{serial_number}")
-                c.drawString(x, y - 2*(font_size + 2), mfg_date)
+                # Draw 3 lines with letter spacing
+                draw_text(c, x, y, batch_code, font_name, font_size, letter_spacing)
+                draw_text(c, x, y - font_size - 2, f"{prefix}{serial_number}", font_name, font_size, letter_spacing)
+                draw_text(c, x, y - 2*(font_size + 2), mfg_date, font_name, font_size, letter_spacing)
 
                 serial_number += 1
             if serial_number > end:
@@ -94,6 +110,9 @@ font_size = st.number_input("Font size", min_value=6, value=12)
 fonts = register_custom_fonts()
 font_name = st.selectbox("Font Style", options=list(fonts.keys()), index=list(fonts.keys()).index("Helvetica"))
 
+# Letter spacing
+letter_spacing = st.number_input("Letter spacing (tracking)", min_value=0.0, max_value=5.0, value=0.0, step=0.1)
+
 # Preview options
 st.subheader("🔍 Preview Options")
 preview_start = st.number_input("Preview starting number", min_value=start, max_value=end, value=start)
@@ -105,7 +124,7 @@ if st.button("Preview Serial Numbers"):
     st.dataframe(preview_df, use_container_width=True)
 
 if st.button("Generate PDF"):
-    pdf_buffer = generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name)
+    pdf_buffer = generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, letter_spacing=letter_spacing)
     st.download_button(
         label="📥 Download PDF",
         data=pdf_buffer,
