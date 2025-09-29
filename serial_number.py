@@ -11,7 +11,9 @@ import os
 # Register custom fonts if .ttf files are available
 def register_custom_fonts():
     fonts = {}
-    font_folder = "fonts"  # folder containing TTF files
+
+    # 1. Register fonts from "fonts" folder (if exists)
+    font_folder = "fonts"
     if os.path.exists(font_folder):
         for file in os.listdir(font_folder):
             if file.endswith(".ttf"):
@@ -19,18 +21,18 @@ def register_custom_fonts():
                 pdfmetrics.registerFont(TTFont(font_name, os.path.join(font_folder, file)))
                 fonts[font_name] = font_name
 
-    # Add built-in fonts
+    # 2. Check if ArialNarrow.ttf is in the same folder as this script
+    arial_local = "ArialNarrow.ttf"
+    if os.path.exists(arial_local):
+        pdfmetrics.registerFont(TTFont("Arial-Narrow", arial_local))
+        fonts["Arial-Narrow"] = "Arial-Narrow"
+
+    # 3. Add built-in fonts
     fonts.update({
         "Helvetica": "Helvetica",
         "Times-Roman": "Times-Roman",
         "Courier": "Courier"
     })
-
-    # Add Arial Narrow if present
-    arial_narrow_path = os.path.join("fonts", "ArialNarrow.ttf")
-    if os.path.exists(arial_narrow_path):
-        pdfmetrics.registerFont(TTFont("Arial-Narrow", arial_narrow_path))
-        fonts["Arial-Narrow"] = "Arial-Narrow"
 
     return fonts
 
@@ -108,7 +110,13 @@ font_size = st.number_input("Font size", min_value=6, value=12)
 
 # Font selection
 fonts = register_custom_fonts()
-font_name = st.selectbox("Font Style", options=list(fonts.keys()), index=list(fonts.keys()).index("Helvetica"))
+default_font = "Arial-Narrow" if "Arial-Narrow" in fonts else "Helvetica"
+
+font_name = st.selectbox(
+    "Font Style",
+    options=list(fonts.keys()),
+    index=list(fonts.keys()).index(default_font)
+)
 
 # Letter spacing
 letter_spacing = st.number_input("Letter spacing (tracking)", min_value=0.0, max_value=5.0, value=0.0, step=0.1)
@@ -132,3 +140,4 @@ if st.button("Generate PDF"):
         mime="application/pdf"
     )
     st.success(f"✅ Generated serial numbers from {start} to {end}")
+
