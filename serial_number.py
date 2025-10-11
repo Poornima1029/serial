@@ -112,11 +112,11 @@ def generate_preview(prefix, start, end, batch_code, mfg_date, preview_start, pr
 # ------------------------------
 st.title("📄 Circuit Board Serial Number PDF Generator")
 
-prefix = st.text_input("Prefix (e.g., A296/)", "A296/")
-start = st.number_input("Starting number", min_value=0, value=12081)
-end = st.number_input("Ending number", min_value=0, value=12090)
-batch_code = st.text_input("Batch Code", "H03 8002")
-mfg_date = st.text_input("Manufacturing Date", "Mfg: SEP - 2025")
+prefix = st.text_input("Prefix (e.g., A296/)", "SL.NO : ")
+start = st.number_input("Starting number", min_value=0, value=)
+end = st.number_input("Ending number", min_value=0, value=)
+batch_code = st.text_input("Batch Code", "")
+mfg_date = st.text_input("Manufacturing Date", "MFG : SEP - 2025")
 
 rows = st.number_input("Rows per page", min_value=1, value=7)
 cols = st.number_input("Columns per page", min_value=1, value=3)
