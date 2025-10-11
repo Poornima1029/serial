@@ -113,8 +113,8 @@ def generate_preview(prefix, start, end, batch_code, mfg_date, preview_start, pr
 st.title("📄 Circuit Board Serial Number PDF Generator")
 
 prefix = st.text_input("Prefix (e.g., A296/)", "SL.NO : ")
-start = st.number_input("Starting number", min_value=0, value=)
-end = st.number_input("Ending number", min_value=0, value=)
+start = st.number_input("Starting number", min_value=0, value=0)
+end = st.number_input("Ending number", min_value=0, value=0)
 batch_code = st.text_input("Batch Code", "")
 mfg_date = st.text_input("Manufacturing Date", "MFG : SEP - 2025")
 
