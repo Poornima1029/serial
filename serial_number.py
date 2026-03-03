@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 import pandas as pd
@@ -63,7 +63,7 @@ def generate_pdf_columnwise(prefix, start, end, batch_code, mfg_date,
                             margin_x=50, margin_y=50, letter_spacing=0):
 
     buffer = io.BytesIO()
-    c = canvas.Canvas(buffer, pagesize=A4)
+    c = canvas.Canvas(buffer, pagesize=landscape(A4))
     width, height = A4
 
     usable_width = width - 2 * margin_x
