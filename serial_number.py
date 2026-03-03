@@ -58,13 +58,13 @@ def draw_text(c, x, y, text, font_name, font_size, letter_spacing=0):
     c.drawText(text_obj)
 
 # Generate PDF
-def generate_pdf_columnwise(prefix, start, end, batch_code, mfg_date,
-                            rows, cols, font_size, font_name,
-                            margin_x=50, margin_y=50, letter_spacing=0):
+def generate_pdf_special_pattern(prefix, start, end, batch_code, mfg_date,
+                                 rows, cols, font_size, font_name,
+                                 margin_x=40, margin_y=40, letter_spacing=0):
 
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=landscape(A4))
-    width, height = A4
+    width, height = landscape(A4)
 
     usable_width = width - 2 * margin_x
     usable_height = height - 2 * margin_y
@@ -72,38 +72,34 @@ def generate_pdf_columnwise(prefix, start, end, batch_code, mfg_date,
     x_spacing = usable_width / cols
     y_spacing = usable_height / rows
 
-    serials = list(range(start, end + 1))
     total_per_page = rows * cols
-    total_pages = math.ceil(len(serials) / total_per_page)
+    total_numbers = end - start + 1
+    total_pages = math.ceil(total_numbers / total_per_page)
 
-    serial_index = 0
+    current_start = start
 
     for page in range(total_pages):
 
         for col in range(cols):
             for row in range(rows):
 
-                if serial_index >= len(serials):
+                number = current_start + (row * cols) + col
+
+                if number > end:
                     break
 
                 x = margin_x + col * x_spacing
                 y = height - margin_y - row * y_spacing + (y_spacing - font_size*3)/2
 
-                serial_number = serials[serial_index]
-
                 draw_text(c, x, y, batch_code, font_name, font_size, letter_spacing)
                 draw_text(c, x, y - font_size - 2,
-                          f"{prefix}{serial_number}",
+                          f"{prefix}{number}",
                           font_name, font_size, letter_spacing)
                 draw_text(c, x, y - 2*(font_size + 2),
                           mfg_date,
                           font_name, font_size, letter_spacing)
 
-                serial_index += 1
-
-            if serial_index >= len(serials):
-                break
-
+        current_start += total_per_page
         c.showPage()
 
     c.save()
