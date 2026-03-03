@@ -58,7 +58,10 @@ def draw_text(c, x, y, text, font_name, font_size, letter_spacing=0):
     c.drawText(text_obj)
 
 # Generate PDF
-def generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, margin_x=50, margin_y=50, letter_spacing=0):
+def generate_pdf_columnwise(prefix, start, end, batch_code, mfg_date,
+                            rows, cols, font_size, font_name,
+                            margin_x=50, margin_y=50, letter_spacing=0):
+
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
@@ -69,33 +72,43 @@ def generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size
     x_spacing = usable_width / cols
     y_spacing = usable_height / rows
 
-    total_serials = end - start + 1
-    serial_number = start
+    serials = list(range(start, end + 1))
     total_per_page = rows * cols
-    total_pages = math.ceil(total_serials / total_per_page)
+    total_pages = math.ceil(len(serials) / total_per_page)
+
+    serial_index = 0
 
     for page in range(total_pages):
+
         for col in range(cols):
             for row in range(rows):
-                if serial_number > end:
+
+                if serial_index >= len(serials):
                     break
+
                 x = margin_x + col * x_spacing
                 y = height - margin_y - row * y_spacing + (y_spacing - font_size*3)/2
 
-                # Draw 3 lines with letter spacing
-                draw_text(c, x, y, batch_code, font_name, font_size, letter_spacing)
-                draw_text(c, x, y - font_size - 2, f"{prefix}{serial_number}", font_name, font_size, letter_spacing)
-                draw_text(c, x, y - 2*(font_size + 2), mfg_date, font_name, font_size, letter_spacing)
+                serial_number = serials[serial_index]
 
-                serial_number += 1
-            if serial_number > end:
+                draw_text(c, x, y, batch_code, font_name, font_size, letter_spacing)
+                draw_text(c, x, y - font_size - 2,
+                          f"{prefix}{serial_number}",
+                          font_name, font_size, letter_spacing)
+                draw_text(c, x, y - 2*(font_size + 2),
+                          mfg_date,
+                          font_name, font_size, letter_spacing)
+
+                serial_index += 1
+
+            if serial_index >= len(serials):
                 break
+
         c.showPage()
 
     c.save()
     buffer.seek(0)
     return buffer
-
 # Generate preview for Streamlit
 def generate_preview(prefix, start, end, batch_code, mfg_date, preview_start, preview_count):
     preview_list = []
@@ -151,7 +164,7 @@ if st.button("Preview Serial Numbers"):
     st.dataframe(preview_df, use_container_width=True)
 
 if st.button("Generate PDF"):
-    pdf_buffer = generate_pdf(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, letter_spacing=letter_spacing)
+    pdf_buffer = generate_pdf_columnwise(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, letter_spacing=letter_spacing)
     st.download_button(
         label="📥 Download PDF",
         data=pdf_buffer,
