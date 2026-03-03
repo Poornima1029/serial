@@ -160,7 +160,7 @@ if st.button("Preview Serial Numbers"):
     st.dataframe(preview_df, use_container_width=True)
 
 if st.button("Generate PDF"):
-    pdf_buffer = generate_pdf_columnwise(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, letter_spacing=letter_spacing)
+    pdf_buffer = generate_pdf_special_pattern(prefix, start, end, batch_code, mfg_date, rows, cols, font_size, font_name, letter_spacing=letter_spacing)
     st.download_button(
         label="📥 Download PDF",
         data=pdf_buffer,
