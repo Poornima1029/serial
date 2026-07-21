@@ -162,7 +162,7 @@ mfg_date = st.text_input("Manufacturing Date", "MFG : SEP - 2025")
 
 rows = st.number_input("Rows per page", min_value=1, value=7)
 cols = st.number_input("Columns per page", min_value=1, value=3)
-font_size = st.number_input("Font size", min_value=6, value=12)
+font_size = st.number_input("Font size", min_value=4, value=12)
 
 # Font selection
 fonts = register_custom_fonts()
