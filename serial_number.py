@@ -65,7 +65,9 @@ def draw_text(c, x, y, text, font_name, font_size, letter_spacing=0):
 # Generate PDF
 def generate_pdf(prefix, start, end, batch_code, mfg_date,
                  rows, cols, font_size, font_name,
-                 margin_x=50, margin_y=50, letter_spacing=0):
+                 margin_x=50, margin_y=50,
+                 letter_spacing=0,
+                 line_spacing=2):
 
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
@@ -93,13 +95,30 @@ def generate_pdf(prefix, start, end, batch_code, mfg_date,
                 y = height - margin_y - row * y_spacing + (y_spacing - font_size * 3) / 2
 
                 # Draw 3 lines with letter spacing
-                draw_text(c, x, y, batch_code, font_name, font_size, letter_spacing)
-                draw_text(c, x, y - font_size - 2,
-                          f"{prefix}{serial_number}",
-                          font_name, font_size, letter_spacing)
-                draw_text(c, x, y - 2 * (font_size + 2),
-                          mfg_date,
-                          font_name, font_size, letter_spacing)
+                line_gap = font_size + line_spacing
+                draw_text(
+                    c, x, y,
+                    batch_code,
+                    font_name,
+                    font_size,
+                    letter_spacing
+                )
+                
+                draw_text(
+                    c, x, y - line_gap,
+                    f"{prefix}{serial_number}",
+                    font_name,
+                    font_size,
+                    letter_spacing
+                )
+                
+                draw_text(
+                    c, x, y - 2 * line_gap,
+                    mfg_date,
+                    font_name,
+                    font_size,
+                    letter_spacing
+                )
 
                 serial_number += 1
 
@@ -168,7 +187,14 @@ letter_spacing = st.number_input(
     value=0.0,
     step=0.1
 )
-
+# Line spacing between the 3 text lines
+line_spacing = st.number_input(
+    "Line spacing",
+    min_value=0,
+    max_value=30,
+    value=2,
+    step=1
+)
 # Preview options
 st.subheader("🔍 Preview Options")
 
@@ -198,10 +224,11 @@ if st.button("Preview Serial Numbers"):
 
 if st.button("Generate PDF"):
     pdf_buffer = generate_pdf(
-        prefix, start, end, batch_code, mfg_date,
-        rows, cols, font_size, font_name,
-        letter_spacing=letter_spacing
-    )
+    prefix, start, end, batch_code, mfg_date,
+    rows, cols, font_size, font_name,
+    letter_spacing=letter_spacing,
+    line_spacing=line_spacing
+)
 
     st.download_button(
         label="📥 Download PDF",
